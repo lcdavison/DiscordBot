@@ -1,2 +1,3 @@
 ﻿DiscordBot/bin/Debug/netcoreapp3.1/token.txt
 *.exe
+DiscordBot/bin/Debug/netcoreapp3.1/youtube-api-token.txt

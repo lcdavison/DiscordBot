@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Google.Apis.Services;
@@ -42,7 +43,7 @@ namespace DiscordBot.Modules
         {
             var youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
-                ApiKey = "AIzaSyDEKL8yzjWd83TclQVAx5zHVfjaeNLx3Wo",
+                ApiKey = LoadYouTubeAPIToken(),
                 ApplicationName = this.GetType().ToString()
             });
 
@@ -61,6 +62,17 @@ namespace DiscordBot.Modules
                         break;
                 }
             }
+        }
+
+        private string LoadYouTubeAPIToken()
+        {
+            string token;
+            using(var streamReader = new StreamReader("youtube-api-token.txt"))
+            {
+                token = streamReader.ReadLine();
+            }
+
+            return token;
         }
     }
 }
