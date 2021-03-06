@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.3.0" />
+    <PackageReference Include="Google.Apis.Core" Version="1.50.0" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.50.0.2238" />
   </ItemGroup>
 
 </Project>

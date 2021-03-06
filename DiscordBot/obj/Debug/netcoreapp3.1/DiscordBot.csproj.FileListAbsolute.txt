@@ -20,3 +20,8 @@ C:\Users\Luke\source\repos\DiscordBot\DiscordBot\obj\Debug\netcoreapp3.1\Discord
 C:\Users\Luke\source\repos\DiscordBot\DiscordBot\obj\Debug\netcoreapp3.1\DiscordBot.dll
 C:\Users\Luke\source\repos\DiscordBot\DiscordBot\obj\Debug\netcoreapp3.1\DiscordBot.pdb
 C:\Users\Luke\source\repos\DiscordBot\DiscordBot\obj\Debug\netcoreapp3.1\DiscordBot.genruntimeconfig.cache
+C:\Users\Luke\source\repos\DiscordBot\DiscordBot\bin\Debug\netcoreapp3.1\Google.Apis.dll
+C:\Users\Luke\source\repos\DiscordBot\DiscordBot\bin\Debug\netcoreapp3.1\Google.Apis.Auth.PlatformServices.dll
+C:\Users\Luke\source\repos\DiscordBot\DiscordBot\bin\Debug\netcoreapp3.1\Google.Apis.Auth.dll
+C:\Users\Luke\source\repos\DiscordBot\DiscordBot\bin\Debug\netcoreapp3.1\Google.Apis.Core.dll
+C:\Users\Luke\source\repos\DiscordBot\DiscordBot\bin\Debug\netcoreapp3.1\Google.Apis.YouTube.v3.dll

@@ -8,7 +8,9 @@
     ".NETCoreApp,Version=v3.1": {
       "DiscordBot/1.0.0": {
         "dependencies": {
-          "Discord.Net": "2.3.0"
+          "Discord.Net": "2.3.0",
+          "Google.Apis.Core": "1.50.0",
+          "Google.Apis.YouTube.v3": "1.50.0.2238"
         },
         "runtime": {
           "DiscordBot.dll": {}
@@ -36,7 +38,7 @@
       },
       "Discord.Net.Core/2.3.0": {
         "dependencies": {
-          "Newtonsoft.Json": "12.0.2",
+          "Newtonsoft.Json": "12.0.3",
           "System.Collections.Immutable": "1.3.1",
           "System.Interactive.Async": "4.0.0"
         },
@@ -82,13 +84,63 @@
           }
         }
       },
+      "Google.Apis/1.50.0": {
+        "dependencies": {
+          "Google.Apis.Core": "1.50.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Apis.dll": {
+            "assemblyVersion": "1.50.0.0",
+            "fileVersion": "1.50.0.0"
+          }
+        }
+      },
+      "Google.Apis.Auth/1.50.0": {
+        "dependencies": {
+          "Google.Apis": "1.50.0",
+          "Google.Apis.Core": "1.50.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Apis.Auth.PlatformServices.dll": {
+            "assemblyVersion": "1.50.0.0",
+            "fileVersion": "1.50.0.0"
+          },
+          "lib/netstandard2.0/Google.Apis.Auth.dll": {
+            "assemblyVersion": "1.50.0.0",
+            "fileVersion": "1.50.0.0"
+          }
+        }
+      },
+      "Google.Apis.Core/1.50.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Apis.Core.dll": {
+            "assemblyVersion": "1.50.0.0",
+            "fileVersion": "1.50.0.0"
+          }
+        }
+      },
+      "Google.Apis.YouTube.v3/1.50.0.2238": {
+        "dependencies": {
+          "Google.Apis": "1.50.0",
+          "Google.Apis.Auth": "1.50.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Apis.YouTube.v3.dll": {
+            "assemblyVersion": "1.50.0.2238",
+            "fileVersion": "1.50.0.2238"
+          }
+        }
+      },
       "Microsoft.NETCore.Platforms/1.1.0": {},
       "Microsoft.NETCore.Targets/1.1.0": {},
-      "Newtonsoft.Json/12.0.2": {
+      "Newtonsoft.Json/12.0.3": {
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {
             "assemblyVersion": "12.0.0.0",
-            "fileVersion": "12.0.2.23222"
+            "fileVersion": "12.0.3.23909"
           }
         }
       },
@@ -270,6 +322,34 @@
       "path": "discord.net.websocket/2.3.0",
       "hashPath": "discord.net.websocket.2.3.0.nupkg.sha512"
     },
+    "Google.Apis/1.50.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qV0wmPVM03YU2dEi8uir+9Ee8MwoH8ELwMVbDX3fuf2NUbweY43fAQ7P20xbq/4nhgOP/maWzrjNlw8WkD4hyw==",
+      "path": "google.apis/1.50.0",
+      "hashPath": "google.apis.1.50.0.nupkg.sha512"
+    },
+    "Google.Apis.Auth/1.50.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-y6hqXcDzTA5tj3Qasr97anpIc+gGJC9QlWJnGSRvp7o4/c4b4Bd5tBgqyJKhgfBMo+HugXGcYh17Kvm5SB3v6g==",
+      "path": "google.apis.auth/1.50.0",
+      "hashPath": "google.apis.auth.1.50.0.nupkg.sha512"
+    },
+    "Google.Apis.Core/1.50.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-E/ioNStr2z0LXXAaGR7bnbRQqozjFb12mi5zs/Bm4c2ZH9uoKOxz9FbQkNRq4R3yHif5gxt3nh8Ei7g9qRiYxQ==",
+      "path": "google.apis.core/1.50.0",
+      "hashPath": "google.apis.core.1.50.0.nupkg.sha512"
+    },
+    "Google.Apis.YouTube.v3/1.50.0.2238": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ikvbIDus+/wK4dWF0Pet1ABmklOVj33JIcBa5+RUmoOMaqb9GbDvJL384uiI7/a04KAGUmhxjdYd5TJu1HYVTg==",
+      "path": "google.apis.youtube.v3/1.50.0.2238",
+      "hashPath": "google.apis.youtube.v3.1.50.0.2238.nupkg.sha512"
+    },
     "Microsoft.NETCore.Platforms/1.1.0": {
       "type": "package",
       "serviceable": true,
@@ -284,12 +364,12 @@
       "path": "microsoft.netcore.targets/1.1.0",
       "hashPath": "microsoft.netcore.targets.1.1.0.nupkg.sha512"
     },
-    "Newtonsoft.Json/12.0.2": {
+    "Newtonsoft.Json/12.0.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-rTK0s2EKlfHsQsH6Yx2smvcTCeyoDNgCW7FEYyV01drPlh2T243PR2DiDXqtC5N4GDm4Ma/lkxfW5a/4793vbA==",
-      "path": "newtonsoft.json/12.0.2",
-      "hashPath": "newtonsoft.json.12.0.2.nupkg.sha512"
+      "sha512": "sha512-6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg==",
+      "path": "newtonsoft.json/12.0.3",
+      "hashPath": "newtonsoft.json.12.0.3.nupkg.sha512"
     },
     "System.Collections/4.3.0": {
       "type": "package",
