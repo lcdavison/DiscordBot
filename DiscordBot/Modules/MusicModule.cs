@@ -1,42 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Threading.Tasks;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using static DiscordBot.Data.YouTubeSearchResult;
+using YoutubeExplode;
+using YoutubeExplode.Videos.Streams;
 
 namespace DiscordBot.Modules
 {
     public class MusicModule : ModuleBase<SocketCommandContext>
     {
+        private const string YOUTUBE_URI = @"https://www.youtube.com/watch?v=";
+
         [Command("play")]
         public async Task PlayCommand([Remainder] string input)
         {
-            if (Videos.Count == 0)
-            {
-                await PerformYouTubeSearch(input);
+            bool isNumber = int.TryParse(input, out int videoIndex);
 
-                await Context.Channel.SendMessageAsync(
-                $"1 : {Videos[0]}\n" +
-                $"2 : {Videos[1]}\n" +
-                $"3 : {Videos[2]}\n" +
-                $"4 : {Videos[3]}\n" +
-                $"5 : {Videos[4]}");
+            if(isNumber)
+            {
+                if(Videos.Count == 0)
+                {
+                    await PerformYouTubeSearch(input);
+
+                    await SendVideoResults();
+                }
+                else
+                {
+                    var youtubeClient = new YoutubeClient();
+
+                    videoIndex -= 1;
+
+                    var selectedVideo = Videos[videoIndex];
+                    var videoStreamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(selectedVideo.ID);
+
+                    var audioStreamInfo = videoStreamManifest.GetAudioOnly().WithHighestBitrate();
+
+                    if(audioStreamInfo is null)
+                    {
+                        throw new NullReferenceException($"{nameof(audioStreamInfo)} is null");
+                    }
+
+                    Console.WriteLine($"Audio Stream URL : {audioStreamInfo.Url}");
+                    
+                    Videos.Clear();
+                }
             }
             else
             {
-                int videoIndex = int.Parse(input);
-                videoIndex -= 1;
-
-                Console.WriteLine($"{Videos[videoIndex]}");
-
                 Videos.Clear();
-            }
 
-            Console.WriteLine(Videos.Count);
+                await PerformYouTubeSearch(input);
+
+                await SendVideoResults();
+            }
         }
 
         private async Task PerformYouTubeSearch(string keyword)
@@ -50,15 +69,18 @@ namespace DiscordBot.Modules
             var searchRequest = youtubeService.Search.List("snippet");
             searchRequest.Q = keyword;
             searchRequest.MaxResults = 5;
+            searchRequest.Type = "video";
 
             var searchResponse = await searchRequest.ExecuteAsync();
 
             foreach (var searchItem in searchResponse.Items)
             {
+                Console.WriteLine(searchItem.Id.VideoId);
+
                 switch (searchItem.Id.Kind)
                 {
                     case "youtube#video":
-                        Videos.Add($"{searchItem.Snippet.Title}");
+                        AddSearchResult(searchItem.Id.VideoId, searchItem.Snippet.Title);
                         break;
                 }
             }
@@ -73,6 +95,21 @@ namespace DiscordBot.Modules
             }
 
             return token;
+        }
+
+        private void AddSearchResult(string videoId, string videoTitle)
+        {
+            Videos.Add((ID: videoId, Title: videoTitle));
+        }
+
+        private async Task SendVideoResults()
+        {
+            await Context.Channel.SendMessageAsync(
+                $"1 : {Videos[0].Title}\n" +
+                $"2 : {Videos[1].Title}\n" +
+                $"3 : {Videos[2].Title}\n" +
+                $"4 : {Videos[3].Title}\n" +
+                $"5 : {Videos[4].Title}");
         }
     }
 }

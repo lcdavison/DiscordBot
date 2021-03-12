@@ -6,6 +6,6 @@ namespace DiscordBot.Data
 {
     internal static class YouTubeSearchResult
     {
-        public static List<string> Videos { get; set; } = new List<string>();
+        public static List<(string ID, string Title)> Videos { get; set; } = new List<(string, string)>();
     }
 }
