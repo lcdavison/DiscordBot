@@ -17,9 +17,9 @@ namespace DiscordBot.Modules
         [Command("play")]
         public async Task PlayCommand([Remainder] string input)
         {
-            bool isNumber = int.TryParse(input, out int videoIndex);
+            bool isJustNumber = int.TryParse(input, out int videoIndex) && input.Length < 2;
 
-            if(isNumber)
+            if(isJustNumber)
             {
                 if(Videos.Count == 0)
                 {
