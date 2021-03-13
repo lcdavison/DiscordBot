@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using YoutubeExplode.Videos.Streams;
+using System.Threading.Tasks;
 
 namespace DiscordBot.Data
 {
@@ -9,8 +10,6 @@ namespace DiscordBot.Data
     {
         public string Name { get; set; }
 
-        public string FilePath { get; set; }
-
-        public IStreamInfo AudioStreamInfo { get; set; }
+        public Task<string> DownloadSongTask { get; set; }
     }
 }

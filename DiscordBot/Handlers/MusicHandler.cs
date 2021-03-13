@@ -10,6 +10,7 @@ using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 using System.Diagnostics;
 using DiscordBot.Data;
+using YoutubeExplode.Videos;
 
 namespace DiscordBot.Handlers
 {
@@ -20,6 +21,7 @@ namespace DiscordBot.Handlers
         private IAudioClient _audioClient;
         private YoutubeClient _youtubeClient;
         private ConcurrentQueue<PlaylistSong> _playlist;
+        private bool _isPlaying = false;
 
         public MusicHandler(YoutubeClient youtubeClient)
         {
@@ -27,39 +29,44 @@ namespace DiscordBot.Handlers
             _playlist = new ConcurrentQueue<PlaylistSong>();
         }
 
-        public async Task<bool> JoinVoiceChannel(IVoiceChannel voiceChannel)
+        public async Task JoinVoiceChannel(IVoiceChannel voiceChannel)
         {
-            bool isAlreadyConnected = false;
-
             if (_audioClient is { })
             {
-                isAlreadyConnected = true;
+                return;
             }
             else
             {
                 _audioClient = await voiceChannel.ConnectAsync();
             }
-
-            return isAlreadyConnected;
         }
 
         public async Task QueueSong(string videoId)
         {
-            var videoTitle = await GetVideoName(videoId);
-
-            var audioStreamInfo = await GetAudioStreamInfo(videoId);
+            var video = await GetVideoMetadata(videoId);
 
             _playlist.Enqueue(new PlaylistSong
             {
-                Name = videoTitle,
-                AudioStreamInfo = audioStreamInfo
+                Name = video.Title,
+                DownloadSongTask = DownloadSong(video.Id, video.Title)
             });
         }
 
-        private async Task<string> GetVideoName(string videoId)
+        private async Task<Video> GetVideoMetadata(string videoId)
         {
             var video = await _youtubeClient.Videos.GetAsync(videoId);
-            return video.Title;
+            return video;
+        }
+
+        private async Task<string> DownloadSong(string videoId, string videoName)
+        {
+            var audioStreamInfo = await GetAudioStreamInfo(videoId);
+
+            string path = DOWNLOAD_BASE_PATH + $"{videoName}.{audioStreamInfo.Container.Name}";
+
+            await _youtubeClient.Videos.Streams.DownloadAsync(audioStreamInfo, path);
+
+            return path;
         }
 
         private async Task<IStreamInfo> GetAudioStreamInfo(string videoId)
@@ -83,13 +90,25 @@ namespace DiscordBot.Handlers
 
         public async Task PlayPlaylist()
         {
-            while(_playlist.Count > 0)
+            if (!_isPlaying)
             {
-                if(_playlist.TryDequeue(out var song))
+                _isPlaying = true;
+
+                while (!_playlist.IsEmpty)
                 {
-                    await PlaySong(song);
+                    if (_playlist.TryDequeue(out var song))
+                    {
+                        await PlaySong(song);
+                    }
                 }
+
+                _isPlaying = false;
             }
+            else
+            {
+                Console.WriteLine("Bot is already playing.");
+                return;
+            }   
         }
 
         private Process CreateStream(string path)
@@ -105,21 +124,20 @@ namespace DiscordBot.Handlers
 
         private async Task PlaySong(PlaylistSong song)
         {
-            var streamInfo = song.AudioStreamInfo;
+            string filePath = await song.DownloadSongTask;
 
-            string path = DOWNLOAD_BASE_PATH + $"audio.{streamInfo.Container.Name}";
-            await _youtubeClient.Videos.Streams.DownloadAsync(streamInfo, path);
-
-            using (var ffmpeg = CreateStream(path))
+            using (var ffmpeg = CreateStream(filePath))
             using (var output = ffmpeg.StandardOutput.BaseStream)
             using (var discord = _audioClient.CreatePCMStream(AudioApplication.Music))
             {
                 await output.CopyToAsync(discord);
                 await output.FlushAsync().ConfigureAwait(false);
             }
+
+            Console.WriteLine("Finished Playing");
         }
 
-        public async Task<PlaylistSong[]> GetPlaylist()
+        public PlaylistSong[] GetPlaylist()
         {
             return _playlist.ToArray();
         }

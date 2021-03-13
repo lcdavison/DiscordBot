@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using static DiscordBot.Data.YouTubeSearchResult;
+using System;
 
 namespace DiscordBot.Modules
 {
@@ -33,7 +34,7 @@ namespace DiscordBot.Modules
         [Alias("q")]
         public async Task QueueCommand()
         {
-            var playlist = await _musicHandler.GetPlaylist();
+            var playlist = _musicHandler.GetPlaylist();
 
             var embedBuilder = new EmbedBuilder();
             embedBuilder.Color = new Color(0, 128, 128);
@@ -43,7 +44,7 @@ namespace DiscordBot.Modules
 
             foreach(var song in playlist)
             {
-                playlistStringBuilder.Append(song.Name);
+                playlistStringBuilder.AppendLine(song.Name);
             }
 
             string playlistContent = playlistStringBuilder.ToString();
@@ -90,7 +91,9 @@ namespace DiscordBot.Modules
 
                 await _musicHandler.QueueSong(selectedVideo.ID);
 
-                JoinAndStartPlaylist();
+                JoinCurrentVoiceChannel();
+
+                _musicHandler.PlayPlaylist();
 
                 Videos.Clear();
             }
@@ -165,31 +168,18 @@ namespace DiscordBot.Modules
             await _searchResultMessage.DeleteAsync();
         }
 
-        private async Task JoinAndStartPlaylist()
+        private async Task JoinCurrentVoiceChannel()
         {
             var voiceChannel = (Context.User as IVoiceState).VoiceChannel;
 
-            Task<bool> joinVoiceChannel;
             if (voiceChannel is { })
             {
-                joinVoiceChannel = _musicHandler.JoinVoiceChannel(voiceChannel);
+                await _musicHandler.JoinVoiceChannel(voiceChannel);
             }
             else
             {
                 await Context.Channel.SendMessageAsync("Must be connected to a voice channel.");
                 return;
-            }
-
-            bool isAlreadyConnected = await joinVoiceChannel;
-            bool isPlaylistEmpty = _musicHandler.IsPlaylistEmpty();
-
-            if (isAlreadyConnected && !isPlaylistEmpty)
-            {
-                return;
-            }
-            else
-            {
-                _musicHandler.PlayPlaylist();
             }
         }
     }
