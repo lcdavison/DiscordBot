@@ -2,18 +2,21 @@
 using Discord.WebSocket;
 using System.Reflection;
 using System.Threading.Tasks;
+using System;
 
-namespace DiscordBot
+namespace DiscordBot.Handlers
 {
     class CommandHandler
     {
         private const char COMMAND_PREFIX = '!';
 
         private readonly DiscordSocketClient _client;
+        private readonly IServiceProvider _serviceProvider;
         private readonly CommandService _commandService;
 
-        public CommandHandler(DiscordSocketClient client, CommandService commandService)
+        public CommandHandler(IServiceProvider serviceProvider, DiscordSocketClient client, CommandService commandService)
         {
+            _serviceProvider = serviceProvider;
             _client = client;
             _commandService = commandService;
         }
@@ -22,7 +25,7 @@ namespace DiscordBot
         {
             _client.MessageReceived += HandleUserCommand;
 
-            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
         }
 
         private async Task HandleUserCommand(SocketMessage socketMessage)
@@ -37,7 +40,7 @@ namespace DiscordBot
                 {
                     var commandContext = new SocketCommandContext(_client, userMessage);
 
-                    await _commandService.ExecuteAsync(commandContext, argumentPosition, null);
+                    await _commandService.ExecuteAsync(commandContext, argumentPosition, _serviceProvider);
                 }
                 else
                 {
