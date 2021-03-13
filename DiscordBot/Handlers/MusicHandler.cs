@@ -76,6 +76,11 @@ namespace DiscordBot.Handlers
             return audioStreamInfo;
         }
 
+        public bool IsPlaylistEmpty()
+        {
+            return _playlist.IsEmpty;
+        }
+
         public async Task PlayPlaylist()
         {
             while(_playlist.Count > 0)

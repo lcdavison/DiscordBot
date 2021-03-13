@@ -181,8 +181,9 @@ namespace DiscordBot.Modules
             }
 
             bool isAlreadyConnected = await joinVoiceChannel;
+            bool isPlaylistEmpty = _musicHandler.IsPlaylistEmpty();
 
-            if (isAlreadyConnected)
+            if (isAlreadyConnected && !isPlaylistEmpty)
             {
                 return;
             }

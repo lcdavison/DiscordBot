@@ -4,12 +4,18 @@ using Discord.WebSocket;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using DiscordBot.Handlers;
+using YoutubeExplode;
 
 namespace DiscordBot
 {
     class Program
     {
         private DiscordSocketClient _client;
+
+        private IServiceProvider _serviceCollection;
+
         private CommandService _commandService;
         private CommandHandler _commandHandler;
 
@@ -64,8 +70,19 @@ namespace DiscordBot
         {
             _commandService = new CommandService();
 
-            _commandHandler = new CommandHandler(_client, _commandService);
+            BuildServiceProvider();
+
+            _commandHandler = new CommandHandler(_serviceCollection, _client, _commandService);
             await _commandHandler.InstallCommandHandler();
+        }
+
+        private void BuildServiceProvider()
+        {
+            _serviceCollection = new ServiceCollection()
+                .AddSingleton(_client)
+                .AddSingleton(_commandService)
+                .AddSingleton(new MusicHandler(new YoutubeClient()))
+                .BuildServiceProvider();
         }
     }
 }
