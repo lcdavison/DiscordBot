@@ -1,25 +1,23 @@
 ﻿using Discord;
 using Discord.Commands;
 using DiscordBot.Handlers;
-using Google.Apis.Services;
-using Google.Apis.YouTube.v3;
-using System.IO;
+using System;
 using System.Text;
 using System.Threading.Tasks;
-using static DiscordBot.Data.YouTubeSearchResult;
-using System;
 
 namespace DiscordBot.Modules
 {
     public class MusicModule : ModuleBase<SocketCommandContext>
     {
         private readonly MusicHandler _musicHandler;
+        private readonly YouTubeHandler _youTubeHandler;
 
         private static IMessage _searchResultMessage;
 
-        public MusicModule(MusicHandler musicHandler)
+        public MusicModule(MusicHandler musicHandler, YouTubeHandler youtuberHandler)
         {
             _musicHandler = musicHandler;
+            _youTubeHandler = youtuberHandler;
         }
 
         [Command("join", RunMode = RunMode.Async)]
@@ -27,14 +25,17 @@ namespace DiscordBot.Modules
         {
             var voiceChannel = (Context.User as IVoiceState).VoiceChannel;
 
-            _musicHandler.JoinVoiceChannel(voiceChannel);
+            if(voiceChannel is { })
+            {
+                _musicHandler.JoinVoiceChannel(voiceChannel);
+            }
         }
 
-        [Command("queue", RunMode=RunMode.Async)]
+        [Command("queue", RunMode = RunMode.Async)]
         [Alias("q")]
         public async Task QueueCommand()
         {
-            var playlist = _musicHandler.GetPlaylist();
+            var playlist = _musicHandler.GetPlaylistSongs();
 
             var embedBuilder = new EmbedBuilder();
             embedBuilder.Color = new Color(0, 128, 128);
@@ -42,7 +43,7 @@ namespace DiscordBot.Modules
 
             var playlistStringBuilder = new StringBuilder();
 
-            foreach(var song in playlist)
+            foreach (var song in playlist)
             {
                 playlistStringBuilder.AppendLine(song.Name);
             }
@@ -53,6 +54,36 @@ namespace DiscordBot.Modules
             var playlistEmbed = embedBuilder.Build();
 
             await ReplyAsync(embed: playlistEmbed);
+        }
+
+        [Command("pause", RunMode = RunMode.Async)]
+        public async Task PauseCommand()
+        {
+            _musicHandler.PausePlaylist();
+        }
+
+        [Command("unpause", RunMode = RunMode.Async)]
+        [Alias("play", "p")]
+        public async Task UnpauseCommand()
+        {
+            await JoinCurrentVoiceChannel();
+
+            _musicHandler.PlayPlaylist();
+        }
+
+        [Command("stop", RunMode = RunMode.Async)]
+        public async Task StopCommand()
+        {
+            _musicHandler.StopPlaylist();
+        }
+
+        [Command("search", RunMode = RunMode.Async)]
+        [Alias("s")]
+        public async Task SearchCommand([Remainder] string searchQuery)
+        {
+            await PerformYouTubeSearch(searchQuery);
+
+            SendVideoResults();
         }
 
         [Command("play", RunMode = RunMode.Async)]
@@ -67,93 +98,58 @@ namespace DiscordBot.Modules
             }
             else
             {
-                Videos.Clear();
-
                 await PerformYouTubeSearch(input);
 
-                await SendVideoResults();
+                SendVideoResults();
             }
         }
 
         private async Task HandleVideoIndexInput(int videoIndex)
         {
-            if (Videos.Count == 0)
+            var videos = _youTubeHandler.SearchResults;
+
+            if (videos.Count == 0)
             {
                 await PerformYouTubeSearch(videoIndex.ToString());
 
-                await SendVideoResults();
+                SendVideoResults();
             }
             else
             {
-                await DeleteSearchMessages();
+                DeleteSearchMessages();
 
-                var selectedVideo = Videos[videoIndex - 1];
+                var selectedVideo = videos[videoIndex - 1];
 
-                await _musicHandler.QueueSong(selectedVideo.ID);
+                Context.Channel.SendMessageAsync($"Added Song To Queue: {selectedVideo.Title}");
 
-                JoinCurrentVoiceChannel();
+                await JoinCurrentVoiceChannel();
 
-                _musicHandler.PlayPlaylist();
+                _musicHandler.PlaySong(selectedVideo);
 
-                Videos.Clear();
+                videos.Clear();
             }
         }
 
         private async Task PerformYouTubeSearch(string keyword)
         {
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
-            {
-                ApiKey = LoadYouTubeAPIToken(),
-                ApplicationName = this.GetType().ToString()
-            });
-
-            var searchRequest = youtubeService.Search.List("snippet");
-            searchRequest.Q = keyword;
-            searchRequest.MaxResults = 5;
-            searchRequest.Type = "video";
-
-            var searchResponse = await searchRequest.ExecuteAsync();
-
-            foreach (var searchItem in searchResponse.Items)
-            {
-                switch (searchItem.Id.Kind)
-                {
-                    case "youtube#video":
-                        AddSearchResult(searchItem.Id.VideoId, searchItem.Snippet.Title);
-                        break;
-                }
-            }
-        }
-
-        private string LoadYouTubeAPIToken()
-        {
-            string token;
-            using (var streamReader = new StreamReader("youtube-api-token.txt"))
-            {
-                token = streamReader.ReadLine();
-            }
-
-            return token;
-        }
-
-        private void AddSearchResult(string videoId, string videoTitle)
-        {
-            Videos.Add((ID: videoId, Title: videoTitle));
+            await _youTubeHandler.SearchForVideos(keyword);
         }
 
         private async Task SendVideoResults()
         {
             var embedBuilder = new EmbedBuilder();
-            embedBuilder.Color = new Color(0, 0, 255);
+            embedBuilder.Color = new Color(0, 128, 200);
             embedBuilder.Title = "Search Results";
 
             var resultStringBuilder = new StringBuilder();
 
-            resultStringBuilder.AppendLine($"1 : {Videos[0].Title}");
-            resultStringBuilder.AppendLine($"2 : {Videos[1].Title}");
-            resultStringBuilder.AppendLine($"3 : {Videos[2].Title}");
-            resultStringBuilder.AppendLine($"4 : {Videos[3].Title}");
-            resultStringBuilder.AppendLine($"5 : {Videos[4].Title}");
+            var videos = _youTubeHandler.SearchResults;
+
+            resultStringBuilder.AppendLine($"1 : {videos[0].Title}");
+            resultStringBuilder.AppendLine($"2 : {videos[1].Title}");
+            resultStringBuilder.AppendLine($"3 : {videos[2].Title}");
+            resultStringBuilder.AppendLine($"4 : {videos[3].Title}");
+            resultStringBuilder.AppendLine($"5 : {videos[4].Title}");
 
             var embedContent = resultStringBuilder.ToString();
             embedBuilder.Description = embedContent;

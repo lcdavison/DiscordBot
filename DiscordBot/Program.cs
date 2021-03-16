@@ -78,10 +78,14 @@ namespace DiscordBot
 
         private void BuildServiceProvider()
         {
+            var youtubeHandler = new YouTubeHandler();
+            var musicHandler = new MusicHandler(youtubeHandler);
+
             _serviceCollection = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
-                .AddSingleton(new MusicHandler(new YoutubeClient()))
+                .AddSingleton(musicHandler)
+                .AddSingleton(youtubeHandler)
                 .BuildServiceProvider();
         }
     }
