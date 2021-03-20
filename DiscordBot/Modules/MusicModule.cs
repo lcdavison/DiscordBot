@@ -14,6 +14,8 @@ namespace DiscordBot.Modules
 
         private static IMessage _searchResultMessage;
 
+        private static bool _hasSearched;
+
         public MusicModule(MusicHandler musicHandler, YouTubeHandler youtuberHandler)
         {
             _musicHandler = musicHandler;
@@ -71,6 +73,12 @@ namespace DiscordBot.Modules
             _musicHandler.PlayPlaylist();
         }
 
+        [Command("skip", RunMode = RunMode.Async)]
+        public async Task SkipCommand()
+        {
+
+        }
+
         [Command("stop", RunMode = RunMode.Async)]
         public async Task StopCommand()
         {
@@ -101,24 +109,18 @@ namespace DiscordBot.Modules
                 await PerformYouTubeSearch(input);
 
                 SendVideoResults();
+
+                _hasSearched = true;
             }
         }
 
         private async Task HandleVideoIndexInput(int videoIndex)
         {
-            var videos = _youTubeHandler.SearchResults;
-
-            if (videos.Count == 0)
-            {
-                await PerformYouTubeSearch(videoIndex.ToString());
-
-                SendVideoResults();
-            }
-            else
+            if(_hasSearched)
             {
                 DeleteSearchMessages();
 
-                var selectedVideo = videos[videoIndex - 1];
+                var selectedVideo = _youTubeHandler.SearchResults[videoIndex - 1];
 
                 Context.Channel.SendMessageAsync($"Added Song To Queue: {selectedVideo.Title}");
 
@@ -126,7 +128,15 @@ namespace DiscordBot.Modules
 
                 _musicHandler.PlaySong(selectedVideo);
 
-                videos.Clear();
+                _hasSearched = false;
+            }
+            else
+            {
+                await PerformYouTubeSearch(videoIndex.ToString());
+
+                SendVideoResults();
+
+                _hasSearched = true;
             }
         }
 

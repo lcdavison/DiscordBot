@@ -10,6 +10,8 @@ namespace DiscordBot.Data
     {
         public string Name { get; set; }
 
+        public TimeSpan CurrentTime { get; set; }
+
         public Task<string> DownloadSongTask { get; set; }
     }
 }

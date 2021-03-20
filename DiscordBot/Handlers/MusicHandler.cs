@@ -2,9 +2,8 @@
 using Discord.Audio;
 using DiscordBot.Data;
 using DiscordBot.Music;
-using System.Threading.Tasks;
-using YoutubeExplode.Videos;
 using System;
+using System.Threading.Tasks;
 
 namespace DiscordBot.Handlers
 {

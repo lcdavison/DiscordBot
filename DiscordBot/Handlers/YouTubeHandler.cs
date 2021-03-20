@@ -49,6 +49,8 @@ namespace DiscordBot.Handlers
 
             var searchResponse = await searchRequest.ExecuteAsync();
 
+            _searchResults.Clear();
+
             foreach (var searchItem in searchResponse.Items)
             {
                 switch (searchItem.Id.Kind)
